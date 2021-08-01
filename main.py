@@ -4,12 +4,14 @@ from math import ceil
 from situation import Situation, situation_strings
 
 def authenticate(acc_credentials, scopes):
+    print("Authenticating access to the API")
     credentials = Credentials.from_service_account_file(acc_credentials, scopes=scopes)
     return gspread.authorize(credentials)
 
 def get_sheet(sheet_key, acc_credentials='credentials.json', scopes=[]):
     gc = authenticate(acc_credentials, scopes)
     sheet = gc.open_by_key(sheet_key)
+    print("Getting worksheet")
     worksheet = sheet.worksheet("engenharia_de_software") 
     return worksheet
 
@@ -40,6 +42,7 @@ def calculate_grade_averages_and_student_situations(worksheet, start_row=4, star
     end_row = len(worksheet_data)  # The list of lists' length is equal to the number of rows in the worksheet
 
     situation_and_grade_of_each_student = []
+    print("Starting data processing")
     for row in range(start_row-1, end_row):
         curr_student = worksheet_data[row][1]
         classes_missed = int(worksheet_data[row][2])
@@ -55,6 +58,7 @@ def calculate_grade_averages_and_student_situations(worksheet, start_row=4, star
     return (situation_and_grade_of_each_student, start_row, end_row)
 
 def update_worksheet(worksheet, results, start_row, end_row):
+    print("Updating worksheet")
     worksheet.update(f'G{start_row}:H{end_row}', results)
 
 def main():
@@ -67,6 +71,7 @@ def main():
     worksheet = get_sheet(sheet_key, service_account, scopes)
     students_results, start_row, end_row = calculate_grade_averages_and_student_situations(worksheet)
     update_worksheet(worksheet, students_results, start_row, end_row)
+    print("Finished!")
  
 if __name__ == '__main__':
     main()
